@@ -1,4 +1,4 @@
-package it.gov.pagopa.noticenumber.model.response;
+package it.gov.pagopa.noticenumber.model;
 
 import jakarta.validation.constraints.NotNull;
 import lombok.AllArgsConstructor;
@@ -10,8 +10,8 @@ import lombok.NoArgsConstructor;
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
-public class IUVGenerationResponse {
+public class NoticeNumberGenerationResponse {
 
     @NotNull
-    private String iuv;
+    private String nav;
 }
