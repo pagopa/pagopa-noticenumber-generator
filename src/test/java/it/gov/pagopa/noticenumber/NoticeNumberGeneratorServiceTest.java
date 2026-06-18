@@ -1,6 +1,8 @@
 package it.gov.pagopa.noticenumber;
 
 import it.gov.pagopa.noticenumber.config.NoticeNumberProperties;
+import it.gov.pagopa.noticenumber.exception.AppErrorCodeMessageEnum;
+import it.gov.pagopa.noticenumber.exception.AppException;
 import it.gov.pagopa.noticenumber.model.NoticeNumberGenerationResponse;
 import it.gov.pagopa.noticenumber.service.NoticeNumberGeneratorService;
 import lombok.extern.slf4j.Slf4j;
@@ -9,6 +11,7 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
+import org.mockito.Mockito;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.data.redis.core.ValueOperations;
@@ -17,6 +20,7 @@ import java.time.Duration;
 import java.util.concurrent.TimeUnit;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.lenient;
@@ -84,5 +88,50 @@ class NoticeNumberGeneratorServiceTest {
         assertThat(checkDigitPart).matches("\\d{2}");
 
         log.info("Generated successfully complete NAV: {}", completeNav);
+    }
+
+    @Test
+    void generateNoticeNumber_Success() {
+        //Given
+        String orgFiscalCode = "12345678901";
+
+        //When
+        NoticeNumberGenerationResponse response = noticeNumberGeneratorService.generateNoticeNumber(orgFiscalCode);
+
+        //Then
+        assertNotNull(response);
+        assertFalse(response.getNav().isEmpty());
+        assertThat(response.getNav()).containsOnlyDigits();
+    }
+
+    @Test
+    void generateNoticeNumber_ShouldThrowAppException_WhenMaxRetriesReached() {
+        // Given
+        String organizationFiscalCode = "12345678901";
+
+        ValueOperations<String, String> valueOperationsMock = mock(ValueOperations.class);
+        Mockito.when(stringRedisTemplate.opsForValue()).thenReturn(valueOperationsMock);
+        Mockito.when(valueOperationsMock.setIfAbsent(anyString(), anyString(), any(Duration.class)))
+                .thenReturn(false);
+
+        // When & Then
+        AppException exception = assertThrows(AppException.class, () -> {
+            noticeNumberGeneratorService.generateNoticeNumber(organizationFiscalCode);
+        });
+
+        assertEquals(AppErrorCodeMessageEnum.GENERATION_MAX_RETRIES_REACHED, exception.getError());
+    }
+
+    @org.junit.jupiter.api.Test
+    void testPropertiesGettersAndSetters() {
+        NoticeNumberProperties properties = new NoticeNumberProperties();
+
+        properties.setLockTtl(java.time.Duration.ofMinutes(1));
+        properties.setMaxRetries(3);
+        properties.setRedisKeyPrefix("test:");
+
+        org.junit.jupiter.api.Assertions.assertNotNull(properties.getLockTtl());
+        org.junit.jupiter.api.Assertions.assertEquals(3, properties.getMaxRetries());
+        org.junit.jupiter.api.Assertions.assertEquals("test:", properties.getRedisKeyPrefix());
     }
 }
