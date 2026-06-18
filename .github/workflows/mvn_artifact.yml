@@ -1,0 +1,78 @@
+# This workflow will build a package using Maven and then publish it to GitHub packages when a release is created
+
+name: Maven Package
+
+# Controls when the workflow will run
+on:
+  pull_request:
+    branches:
+      - main
+    types: [ closed ]
+
+  # Allows you to run this workflow manually from the Actions tab
+  workflow_dispatch:
+    inputs:
+      semver:
+        required: true
+        type: choice
+        description: Select the new Semantic Version
+        options:
+          - major
+          - minor
+          - patch
+          - buildNumber
+
+# permissions given to the current action
+permissions:
+  packages: write
+  contents: write
+
+jobs:
+
+  setup:
+    name: Semver Setup
+    runs-on: ubuntu-latest
+    outputs:
+      semver: ${{ steps.semver.outputs.semver }}
+    steps:
+      - name: Set semver
+        id: semver
+        uses: pagopa/github-actions-template/semver-setup@483a0ceb9ef07dee34f7ce0de5b689cc3043eac4
+
+  package:
+    name: Publish Maven Package
+    needs: setup
+    runs-on: ubuntu-latest
+    outputs:
+      version: ${{ steps.release.outputs.version }}
+    steps:
+      - name: Make Release
+        id: release
+        uses: pagopa/github-actions-template/maven-release@525266fb788f4da438e5919fcf660fe8637271ed #v2.2.0
+        with:
+          semver: ${{ needs.setup.outputs.semver }}
+          github_token: ${{ secrets.BOT_GITHUB_TOKEN }}
+
+      - name: Make Package
+        id: package
+        uses: pagopa/github-actions-template/maven-package@525266fb788f4da438e5919fcf660fe8637271ed #v2.2.0
+        with:
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          branch: ${{ github.ref_name }}
+
+  notification:
+    name: Send slack notification
+    needs: package
+    runs-on: ubuntu-latest
+    steps:
+
+      - name: Slack Notification
+        uses: rtCamp/action-slack-notify@12e36fc18b0689399306c2e0b3e0f2978b7f1ee7
+        env:
+          MSG_MINIMAL: true
+          SLACK_COLOR: '#00e600'
+          SLACK_ICON: https://www.pagopa.gov.it/assets/images/pagopa-logo.png?size=48
+          SLACK_MESSAGE: 'New package available: ${{ needs.package.outputs.version }}'
+          SLACK_TITLE: 'API Config Lib'
+          SLACK_USERNAME: 'Packages'
+          SLACK_WEBHOOK: ${{ secrets.SLACK_WEBHOOK_URL }}
