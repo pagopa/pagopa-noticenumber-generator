@@ -1,0 +1,26 @@
+# release.yml [M.m.p]
+#  ignore-for-release: does not release -> skip
+#  breaking-change: increase major version number (M.x.x) -> major
+#  enhancement: increase minor version number (x.m.x) -> minor
+#  bug: increase patch version number (x.x.p) -> patch
+#  buildNumber
+
+changelog:
+  exclude:
+    labels:
+      - skip
+    authors:
+      - pagopa-github-bot
+  categories:
+    - title: Breaking Changes 🛠
+      labels:
+        - major
+    - title: Exciting New Features 🎉
+      labels:
+        - minor
+    - title: Bugfix 🩺
+      labels:
+        - patch
+    - title: Other Changes
+      labels:
+        - "*"
