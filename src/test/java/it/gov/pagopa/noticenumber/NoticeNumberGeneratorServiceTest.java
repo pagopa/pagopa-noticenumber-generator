@@ -124,14 +124,14 @@ class NoticeNumberGeneratorServiceTest {
 
     @org.junit.jupiter.api.Test
     void testPropertiesGettersAndSetters() {
-        NoticeNumberProperties properties = new NoticeNumberProperties();
+        NoticeNumberProperties noticNumProps = new NoticeNumberProperties();
 
-        properties.setLockTtl(java.time.Duration.ofMinutes(1));
-        properties.setMaxRetries(3);
-        properties.setRedisKeyPrefix("test:");
+        noticNumProps.setLockTtl(java.time.Duration.ofMinutes(1));
+        noticNumProps.setMaxRetries(3);
+        noticNumProps.setRedisKeyPrefix("test:");
 
-        org.junit.jupiter.api.Assertions.assertNotNull(properties.getLockTtl());
-        org.junit.jupiter.api.Assertions.assertEquals(3, properties.getMaxRetries());
-        org.junit.jupiter.api.Assertions.assertEquals("test:", properties.getRedisKeyPrefix());
+        org.junit.jupiter.api.Assertions.assertNotNull(noticNumProps.getLockTtl());
+        org.junit.jupiter.api.Assertions.assertEquals(3, noticNumProps.getMaxRetries());
+        org.junit.jupiter.api.Assertions.assertEquals("test:", noticNumProps.getRedisKeyPrefix());
     }
 }
