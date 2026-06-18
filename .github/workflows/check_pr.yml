@@ -172,7 +172,7 @@ jobs:
               }
             }
 
-            if (changes > 400){
+            if (changes > 500){
               github.rest.issues.addLabels({
                 issue_number: context.issue.number,
                 owner: context.repo.owner,
