@@ -70,6 +70,15 @@ public class NoticeNumberGeneratorService {
                 properties.getRedisKeyPrefix(),
                 organizationFiscalCode,
                 iuv);
-        return Boolean.TRUE.equals(redisTemplate.opsForValue().setIfAbsent(redisKey, "USED", properties.getLockTtl()));
+        java.time.Instant now = java.time.Instant.now();
+        java.time.Instant expireAt = now.plusMillis(properties.getLockMillis());
+        Boolean created = redisTemplate.opsForValue().setIfAbsent(redisKey, "USED");
+
+        if (Boolean.TRUE.equals(created)) {
+            redisTemplate.expireAt(redisKey, expireAt);
+            return true;
+        }
+
+        return false;
     }
 }

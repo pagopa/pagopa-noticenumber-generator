@@ -25,7 +25,7 @@ class NoticeNumberAutoConfigurationTest {
                         "notice.number.aux-digit=3",
                         "notice.number.segregation-code=12",
                         "notice.number.redis-key-prefix=test-notice:",
-                        "notice.number.lock-ttl=2m"
+                        "notice.number.lock-millis=2000"
                 )
                 .run(context -> {
                     assertThat(context).hasSingleBean(NoticeNumberGeneratorService.class);

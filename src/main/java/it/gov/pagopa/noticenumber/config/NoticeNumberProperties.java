@@ -6,7 +6,6 @@ import lombok.Setter;
 import org.springframework.boot.context.properties.ConfigurationProperties;
 import org.springframework.validation.annotation.Validated;
 
-import java.time.Duration;
 
 
 @Getter
@@ -32,8 +31,9 @@ public class NoticeNumberProperties {
     @NotBlank(message = "The parameter notice.number.redis-key-prefix is mandatory")
     private String redisKeyPrefix;
 
-    @NotNull(message = "The parameter 'notice.number.lock-ttl' is mandatory")
-    private Duration lockTtl;
+    @NotNull(message = "The parameter 'notice.number.lock-millis' is mandatory")
+    @Min(value = 1, message = "The lockMillis must be at least 1 millisecond")
+    private Long lockMillis;
 
     @Min(value = 1, message = "The maxRetries must be at least 1")
     private Integer maxRetries = 5;

@@ -53,7 +53,7 @@ class NoticeNumberGeneratorServiceTest {
         lenient().when(properties.getSegregationCode()).thenReturn(12);
         lenient().when(properties.getMaxRetries()).thenReturn(5);
         lenient().when(properties.getRedisKeyPrefix()).thenReturn("test:");
-        lenient().when(properties.getLockTtl()).thenReturn(Duration.ofMinutes(2));
+        lenient().when(properties.getLockMillis()).thenReturn(2000L); // 2 secondi per i test
 
         ValueOperations<String, String> valueOperationsMock = mock(ValueOperations.class);
         lenient().when(stringRedisTemplate.opsForValue()).thenReturn(valueOperationsMock);
@@ -119,7 +119,8 @@ class NoticeNumberGeneratorServiceTest {
 
         ValueOperations<String, String> valueOperationsMock = mock(ValueOperations.class);
         Mockito.when(stringRedisTemplate.opsForValue()).thenReturn(valueOperationsMock);
-        Mockito.when(valueOperationsMock.setIfAbsent(anyString(), anyString(), any(Duration.class)))
+
+        Mockito.when(valueOperationsMock.setIfAbsent(anyString(), anyString()))
                 .thenReturn(false);
 
         // When & Then
@@ -134,11 +135,11 @@ class NoticeNumberGeneratorServiceTest {
     void testPropertiesGettersAndSetters() {
         NoticeNumberProperties noticNumProps = new NoticeNumberProperties();
 
-        noticNumProps.setLockTtl(java.time.Duration.ofMinutes(1));
+        noticNumProps.setLockMillis(2000L);
         noticNumProps.setMaxRetries(3);
         noticNumProps.setRedisKeyPrefix("test:");
 
-        org.junit.jupiter.api.Assertions.assertNotNull(noticNumProps.getLockTtl());
+        org.junit.jupiter.api.Assertions.assertNotNull(noticNumProps.getLockMillis());
         org.junit.jupiter.api.Assertions.assertEquals(3, noticNumProps.getMaxRetries());
         org.junit.jupiter.api.Assertions.assertEquals("test:", noticNumProps.getRedisKeyPrefix());
     }
