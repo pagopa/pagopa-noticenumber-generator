@@ -67,7 +67,7 @@ class NoticeNumberGeneratorServiceTest {
 
         // When
         NoticeNumberGenerationResponse iuvGenerationResponse = noticeNumberGeneratorService.generateNoticeNumber(organizationFiscalCode);
-        String completeNav = iuvGenerationResponse.getNav();
+        String completeNav = iuvGenerationResponse.getNoticeNumber();
 
         // Then
         assertThat(completeNav)
@@ -100,8 +100,8 @@ class NoticeNumberGeneratorServiceTest {
 
         //Then
         assertNotNull(response);
-        assertFalse(response.getNav().isEmpty());
-        assertThat(response.getNav()).containsOnlyDigits();
+        assertFalse(response.getNoticeNumber().isEmpty());
+        assertThat(response.getNoticeNumber()).containsOnlyDigits();
     }
 
     @Test

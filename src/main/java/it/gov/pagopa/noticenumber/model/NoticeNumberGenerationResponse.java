@@ -13,5 +13,5 @@ import lombok.NoArgsConstructor;
 public class NoticeNumberGenerationResponse {
 
     @NotNull
-    private String nav;
+    private String noticeNumber;
 }

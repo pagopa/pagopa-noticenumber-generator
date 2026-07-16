@@ -40,7 +40,7 @@ public class NoticeNumberGeneratorService {
         }
 
         return NoticeNumberGenerationResponse.builder()
-                .nav(properties.getAuxDigit()+iuv)
+                .noticeNumber(properties.getAuxDigit()+iuv)
                 .build();
     }
 
