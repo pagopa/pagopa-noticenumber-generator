@@ -1,5 +1,6 @@
 package it.gov.pagopa.noticenumber.service;
 
+import it.gov.pagopa.noticenumber.client.AppInsightTelemetryClient;
 import it.gov.pagopa.noticenumber.config.NoticeNumberProperties;
 import it.gov.pagopa.noticenumber.exception.AppErrorCodeMessageEnum;
 import it.gov.pagopa.noticenumber.exception.AppException;
@@ -7,6 +8,7 @@ import it.gov.pagopa.noticenumber.model.NoticeNumberGenerationResponse;
 import it.gov.pagopa.noticenumber.service.algorithm.AuxDigitIUVGeneratorAlgorithm;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.ObjectProvider;
 import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.stereotype.Service;
 
@@ -17,6 +19,7 @@ public class NoticeNumberGeneratorService {
 
     private final StringRedisTemplate redisTemplate;
     private final NoticeNumberProperties properties;
+    private final ObjectProvider<AppInsightTelemetryClient> telemetryClientProvider;
 
     public NoticeNumberGenerationResponse generateNoticeNumber(String organizationFiscalCode) {
         String iuv = null;
@@ -27,9 +30,23 @@ public class NoticeNumberGeneratorService {
                 .auxDigit(properties.getAuxDigit())
                 .segregationCode(properties.getSegregationCode());
 
+        AppInsightTelemetryClient telemetryClient = telemetryClientProvider.getIfAvailable();
+
         while (mustTryAgain(found, retries)) {
             log.debug("Generating IUV for organization {}. Retry: {}", organizationFiscalCode, retries);
-            iuv = algorithm.generate();
+            try {
+                iuv = algorithm.generate();
+            }catch (AppException e) {
+                if (telemetryClient != null){
+                    telemetryClient.createCustomEventForAlert(
+                            AppErrorCodeMessageEnum.GENERATION_AUXDIGIT_ALGORITHM_INVALID_PATTERN,
+                            "Failed to generate notice number due to algorithm pattern mismatch (13 digits check failed)",
+                            e
+                    );
+                }
+                throw e;
+            }
+
             found = this.checkIUVUniqueness(organizationFiscalCode, iuv);
             retries++;
         }

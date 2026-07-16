@@ -1,5 +1,6 @@
 package it.gov.pagopa.noticenumber;
 
+import it.gov.pagopa.noticenumber.client.AppInsightTelemetryClient;
 import it.gov.pagopa.noticenumber.config.NoticeNumberProperties;
 import it.gov.pagopa.noticenumber.exception.AppErrorCodeMessageEnum;
 import it.gov.pagopa.noticenumber.exception.AppException;
@@ -13,6 +14,7 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.Mockito;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.beans.factory.ObjectProvider;
 import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.data.redis.core.ValueOperations;
 
@@ -38,6 +40,12 @@ class NoticeNumberGeneratorServiceTest {
 
     @Mock
     private StringRedisTemplate stringRedisTemplate;
+
+    @Mock
+    private ObjectProvider<AppInsightTelemetryClient> telemetryClientProvider;
+
+    @Mock
+    private AppInsightTelemetryClient telemetryClient;
 
     @BeforeEach
     void setUp() {
