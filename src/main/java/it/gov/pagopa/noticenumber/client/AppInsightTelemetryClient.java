@@ -2,6 +2,7 @@ package it.gov.pagopa.noticenumber.client;
 import com.microsoft.applicationinsights.TelemetryClient;
 import com.microsoft.applicationinsights.TelemetryConfiguration;
 import it.gov.pagopa.noticenumber.exception.AppErrorCodeMessageEnum;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
 import java.util.HashMap;
@@ -11,8 +12,9 @@ import java.util.Map;
 @Service
 public class AppInsightTelemetryClient {
 
-    private final String connectionString = System.getenv("APPLICATIONINSIGHTS_CONNECTION_STRING");
-
+    @Value("${applicationinsights.connectionstring}")
+    private String connectionString;
+    
     private final TelemetryClient telemetryClient;
 
     public AppInsightTelemetryClient() {
