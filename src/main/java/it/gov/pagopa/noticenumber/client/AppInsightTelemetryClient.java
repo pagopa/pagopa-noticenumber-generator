@@ -12,12 +12,9 @@ import java.util.Map;
 @Service
 public class AppInsightTelemetryClient {
 
-    @Value("${applicationinsights.connectionstring}")
-    private String connectionString;
-    
     private final TelemetryClient telemetryClient;
 
-    public AppInsightTelemetryClient() {
+    public AppInsightTelemetryClient(@Value("${applicationinsights.connectionstring}") String connectionString) {
         TelemetryConfiguration aDefault = TelemetryConfiguration.createDefault();
         aDefault.setConnectionString(connectionString);
         this.telemetryClient = new TelemetryClient(aDefault);

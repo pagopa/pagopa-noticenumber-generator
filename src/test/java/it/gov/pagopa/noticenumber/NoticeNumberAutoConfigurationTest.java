@@ -8,7 +8,7 @@ import org.springframework.boot.test.context.runner.ApplicationContextRunner;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.data.redis.core.StringRedisTemplate;
-import org.mockito.Mockito;
+import static org.mockito.Mockito.mock;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
@@ -48,7 +48,7 @@ class NoticeNumberAutoConfigurationTest {
     static class MockRedisConfig {
         @Bean
         public StringRedisTemplate stringRedisTemplate() {
-            return Mockito.mock(StringRedisTemplate.class);
+            return mock(StringRedisTemplate.class);
         }
     }
 }

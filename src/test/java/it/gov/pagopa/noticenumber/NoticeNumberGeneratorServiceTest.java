@@ -27,6 +27,7 @@ import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.lenient;
 import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.when;
 
 @Slf4j
 @ExtendWith(MockitoExtension.class)
@@ -118,9 +119,9 @@ class NoticeNumberGeneratorServiceTest {
         String organizationFiscalCode = "12345678901";
 
         ValueOperations<String, String> valueOperationsMock = mock(ValueOperations.class);
-        Mockito.when(stringRedisTemplate.opsForValue()).thenReturn(valueOperationsMock);
+        when(stringRedisTemplate.opsForValue()).thenReturn(valueOperationsMock);
 
-        Mockito.when(valueOperationsMock.setIfAbsent(anyString(), anyString()))
+        when(valueOperationsMock.setIfAbsent(anyString(), anyString()))
                 .thenReturn(false);
 
         // When & Then
