@@ -109,10 +109,11 @@ jobs:
 
       - name: Make Package
         id: package
-        uses: pagopa/github-actions-template/maven-package@525266fb788f4da438e5919fcf660fe8637271ed #v2.2.0
+        uses: pagopa/github-actions-template/maven-package@75eb5a78381493da7fefcd22358214db0a18d20a #TODO
         with:
           github_token: ${{ secrets.GITHUB_TOKEN }}
           branch: ${{ github.ref_name }}
+          jdk_version: 17
 
   notification:
     name: Send slack notification
@@ -127,6 +128,6 @@ jobs:
           SLACK_COLOR: '#00e600'
           SLACK_ICON: https://www.pagopa.gov.it/assets/images/pagopa-logo.png?size=48
           SLACK_MESSAGE: 'New package available: ${{ needs.package.outputs.version }}'
-          SLACK_TITLE: 'API Config Lib'
+          SLACK_TITLE: 'Notice Number Generator Library'
           SLACK_USERNAME: 'Packages'
-          SLACK_WEBHOOK: ${{ secrets.SLACK_WEBHOOK_URL }}
+          SLACK_WEBHOOK: ${{ secrets.SLACK_WEBHOOK_URL_DEPLOY }}
