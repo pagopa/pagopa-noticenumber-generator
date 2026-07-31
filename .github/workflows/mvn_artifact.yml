@@ -34,7 +34,6 @@ jobs:
     runs-on: ubuntu-latest
     outputs:
       semver: ${{ steps.get_semver.outputs.semver }}
-      environment: ${{ steps.get_env.outputs.environment }}
     steps:
       - name: pull request rejected
         if: github.event_name == 'pull_request' && github.event.action == 'closed' && github.event.pull_request.merged != true
@@ -73,26 +72,6 @@ jobs:
         name: Set Output
         run: echo "semver=${{env.SEMVER}}" >> $GITHUB_OUTPUT
 
-      # Set Environment
-      - run: echo "ENVIRNOMENT=${{ inputs.environment}}" >> $GITHUB_ENV
-
-      - if: ${{ inputs.environment == null }}
-        run: echo "ENVIRONMENT=dev" >> $GITHUB_ENV
-
-      - id: get_env
-        name: Set Output
-        run: echo "environment=${{env.ENVIRONMENT}}" >> $GITHUB_OUTPUT
-
-#  setup:
-#    name: Semver Setup
-#    runs-on: ubuntu-latest
-#    outputs:
-#      semver: ${{ steps.semver.outputs.semver }}
-#    steps:
-#      - name: Set semver
-#        id: semver
-#        uses: pagopa/github-actions-template/semver-setup@713f5abd8f8ee210e5f6a4243ae52eb7c1b3b5ab #v2.4.1
-
   package:
     name: Publish Maven Package
     needs: setup
@@ -109,7 +88,7 @@ jobs:
 
       - name: Make Package
         id: package
-        uses: pagopa/github-actions-template/maven-package@75eb5a78381493da7fefcd22358214db0a18d20a #TODO
+        uses: pagopa/github-actions-template/maven-package@89094ad9f5d676cc2b4f5cc718c55e2968873017 #v2.5.0
         with:
           github_token: ${{ secrets.GITHUB_TOKEN }}
           branch: ${{ github.ref_name }}
