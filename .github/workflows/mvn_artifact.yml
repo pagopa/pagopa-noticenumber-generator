@@ -30,14 +30,47 @@ permissions:
 jobs:
 
   setup:
-    name: Semver Setup
+    name: Setup
     runs-on: ubuntu-latest
     outputs:
-      semver: ${{ steps.semver.outputs.semver }}
+      semver: ${{ steps.get_semver.outputs.semver }}
     steps:
-      - name: Set semver
-        id: semver
-        uses: pagopa/github-actions-template/semver-setup@483a0ceb9ef07dee34f7ce0de5b689cc3043eac4
+      - name: pull request rejected
+        if: github.event_name == 'pull_request' && github.event.action == 'closed' && github.event.pull_request.merged != true
+        run: |
+          echo "❌ PR was closed without a merge"
+          exit 1
+
+      # Set Semvar
+      - run: echo "SEMVER=patch" >> $GITHUB_ENV
+
+      - if: ${{ (github.event.pull_request.merged && contains(github.event.pull_request.labels.*.name, 'skip')) }}
+        run: echo "SEMVER=skip" >> $GITHUB_ENV
+
+      - if: ${{ (github.event.pull_request.merged && contains(github.event.pull_request.labels.*.name, 'patch')) }}
+        run: echo "SEMVER=patch" >> $GITHUB_ENV
+
+      - if: ${{ (github.event.pull_request.merged && contains(github.event.pull_request.labels.*.name, 'minor')) }}
+        run: echo "SEMVER=minor" >> $GITHUB_ENV
+
+      - if: ${{ (github.event.pull_request.merged && contains(github.event.pull_request.labels.*.name, 'major')) }}
+        run: echo "SEMVER=major" >> $GITHUB_ENV
+
+      # force semver if dev, !=main or skip release
+      - if: ${{ inputs.version == 'new_release' }}
+        run: echo "SEMVER=minor" >> $GITHUB_ENV
+
+      - if: ${{ inputs.version == 'breaking_change' }}
+        run: echo "SEMVER=major" >> $GITHUB_ENV
+
+      - if: ${{ github.ref_name != 'main' }}
+        run: echo "SEMVER=buildNumber" >> $GITHUB_ENV
+
+      - if: ${{ inputs.version == 'skip_or_promote' }}
+        run: echo "SEMVER=skip" >> $GITHUB_ENV
+      - id: get_semver
+        name: Set Output
+        run: echo "semver=${{env.SEMVER}}" >> $GITHUB_OUTPUT
 
   package:
     name: Publish Maven Package
@@ -51,14 +84,15 @@ jobs:
         uses: pagopa/github-actions-template/maven-release@525266fb788f4da438e5919fcf660fe8637271ed #v2.2.0
         with:
           semver: ${{ needs.setup.outputs.semver }}
-          github_token: ${{ secrets.BOT_GITHUB_TOKEN }}
+          github_token: ${{ secrets.BOT_TOKEN_GITHUB }}
 
       - name: Make Package
         id: package
-        uses: pagopa/github-actions-template/maven-package@525266fb788f4da438e5919fcf660fe8637271ed #v2.2.0
+        uses: pagopa/github-actions-template/maven-package@89094ad9f5d676cc2b4f5cc718c55e2968873017 #v2.5.0
         with:
           github_token: ${{ secrets.GITHUB_TOKEN }}
           branch: ${{ github.ref_name }}
+          jdk_version: 17
 
   notification:
     name: Send slack notification
@@ -73,6 +107,6 @@ jobs:
           SLACK_COLOR: '#00e600'
           SLACK_ICON: https://www.pagopa.gov.it/assets/images/pagopa-logo.png?size=48
           SLACK_MESSAGE: 'New package available: ${{ needs.package.outputs.version }}'
-          SLACK_TITLE: 'API Config Lib'
+          SLACK_TITLE: 'Notice Number Generator Library'
           SLACK_USERNAME: 'Packages'
-          SLACK_WEBHOOK: ${{ secrets.SLACK_WEBHOOK_URL }}
+          SLACK_WEBHOOK: ${{ secrets.SLACK_WEBHOOK_URL_DEPLOY }}
