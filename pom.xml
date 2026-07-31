@@ -12,7 +12,7 @@
 
     <groupId>it.gov.pagopa</groupId>
     <artifactId>pagopa-noticenumber-generator</artifactId>
-    <version>1.0.0-2-fix-pipeline</version>
+    <version>1.0.1</version>
     <description>Java library to generate PagoPA Notice Numbers.</description>
 
     <properties>
