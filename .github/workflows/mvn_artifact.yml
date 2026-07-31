@@ -30,14 +30,68 @@ permissions:
 jobs:
 
   setup:
-    name: Semver Setup
+    name: Setup
     runs-on: ubuntu-latest
     outputs:
-      semver: ${{ steps.semver.outputs.semver }}
+      semver: ${{ steps.get_semver.outputs.semver }}
+      environment: ${{ steps.get_env.outputs.environment }}
     steps:
-      - name: Set semver
-        id: semver
-        uses: pagopa/github-actions-template/semver-setup@483a0ceb9ef07dee34f7ce0de5b689cc3043eac4
+      - name: pull request rejected
+        if: github.event_name == 'pull_request' && github.event.action == 'closed' && github.event.pull_request.merged != true
+        run: |
+          echo "❌ PR was closed without a merge"
+          exit 1
+
+      # Set Semvar
+      - run: echo "SEMVER=patch" >> $GITHUB_ENV
+
+      - if: ${{ (github.event.pull_request.merged && contains(github.event.pull_request.labels.*.name, 'skip')) }}
+        run: echo "SEMVER=skip" >> $GITHUB_ENV
+
+      - if: ${{ (github.event.pull_request.merged && contains(github.event.pull_request.labels.*.name, 'patch')) }}
+        run: echo "SEMVER=patch" >> $GITHUB_ENV
+
+      - if: ${{ (github.event.pull_request.merged && contains(github.event.pull_request.labels.*.name, 'minor')) }}
+        run: echo "SEMVER=minor" >> $GITHUB_ENV
+
+      - if: ${{ (github.event.pull_request.merged && contains(github.event.pull_request.labels.*.name, 'major')) }}
+        run: echo "SEMVER=major" >> $GITHUB_ENV
+
+      # force semver if dev, !=main or skip release
+      - if: ${{ inputs.version == 'new_release' }}
+        run: echo "SEMVER=minor" >> $GITHUB_ENV
+
+      - if: ${{ inputs.version == 'breaking_change' }}
+        run: echo "SEMVER=major" >> $GITHUB_ENV
+
+      - if: ${{ github.ref_name != 'main' }}
+        run: echo "SEMVER=buildNumber" >> $GITHUB_ENV
+
+      - if: ${{ inputs.version == 'skip_or_promote' }}
+        run: echo "SEMVER=skip" >> $GITHUB_ENV
+      - id: get_semver
+        name: Set Output
+        run: echo "semver=${{env.SEMVER}}" >> $GITHUB_OUTPUT
+
+      # Set Environment
+      - run: echo "ENVIRNOMENT=${{ inputs.environment}}" >> $GITHUB_ENV
+
+      - if: ${{ inputs.environment == null }}
+        run: echo "ENVIRONMENT=dev" >> $GITHUB_ENV
+
+      - id: get_env
+        name: Set Output
+        run: echo "environment=${{env.ENVIRONMENT}}" >> $GITHUB_OUTPUT
+
+#  setup:
+#    name: Semver Setup
+#    runs-on: ubuntu-latest
+#    outputs:
+#      semver: ${{ steps.semver.outputs.semver }}
+#    steps:
+#      - name: Set semver
+#        id: semver
+#        uses: pagopa/github-actions-template/semver-setup@713f5abd8f8ee210e5f6a4243ae52eb7c1b3b5ab #v2.4.1
 
   package:
     name: Publish Maven Package
@@ -51,7 +105,7 @@ jobs:
         uses: pagopa/github-actions-template/maven-release@525266fb788f4da438e5919fcf660fe8637271ed #v2.2.0
         with:
           semver: ${{ needs.setup.outputs.semver }}
-          github_token: ${{ secrets.BOT_GITHUB_TOKEN }}
+          github_token: ${{ secrets.BOT_TOKEN_GITHUB }}
 
       - name: Make Package
         id: package
